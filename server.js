@@ -1,6 +1,7 @@
 const express = require('express'); // importing a CommonJS module
 const helmet = require('helmet');
 const hubsRouter = require('./hubs/hubs-router.js');
+const httpMethod = require('./api/dateLogger-middleware.js');
 const morgan = require('morgan');
 
 const server = express();
@@ -11,11 +12,11 @@ const server = express();
 //   next();
 // };
 
-function httpMethod(req,res,next){
-  console.log(new Date().toISOString());
-  console.log(req.method);
-  console.log(req.get('host'));
-  console.log(req.originalUrl);
+function doubler(req,res,next){
+  //turn string to number
+  const number = Number(req.query.number || 0);
+  req.doubled = number*2;
+  console.log(req.doubled);
   next();
 }
 
@@ -45,13 +46,15 @@ server.use(httpMethod);
 server.use('/api/hubs', hubsRouter);
 
 
-server.get('/', (req, res) => {
-  const nameInsert = (req.name) ? ` ${req.name}` : '';
+server.get('/', doubler, (req, res) => {
+  // const nameInsert = (req.name) ? ` ${req.name}` : '';
 
-  res.send(`
-    <h2>Lambda Hubs API</h2>
-    <p>Welcome${nameInsert} to the Lambda Hubs API</p>
-    `);
+  // res.send(`
+  //   <h2>Lambda Hubs API</h2>
+  //   <p>Welcome${nameInsert} to the Lambda Hubs API</p>
+  //   `);
+
+  res.status(200).json({number: req.doubled});
 });
 
 module.exports = server;
